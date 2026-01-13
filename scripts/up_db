@@ -1,0 +1,4 @@
+#!/bin/bash
+docker-compose -f docker-compose/accounts/mysql.yml up -d
+# go into container MySQL
+#docker exec -it jabba-mysql mysql -u jabba -p

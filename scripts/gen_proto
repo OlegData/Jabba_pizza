@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# set -euo pipefail
+
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SPEC="${1:-accounts:service_protos}"
+TARGET=$([[ "$SPEC" == "::" ]] && echo "protobuf/src::" || echo "protobuf/src/$SPEC")
+
+GEN_ROOT="${ROOT}/protobuf/gen_py"
+CODEGEN_DEST="${GEN_ROOT}/codegen"
+
+mkdir -p "$GEN_ROOT"
+
+TMP_ROOT="$(mktemp -d "${ROOT}/.pants_tmp.XXXXXX")"
+DIST_ABS="$(mktemp -d "${GEN_ROOT}/.pants_codegen.XXXXXX")"
+DIST_REL="${DIST_ABS#$ROOT/}"
+
+cleanup() {
+  rm -rf "$TMP_ROOT" "$DIST_ABS"
+}
+trap cleanup EXIT
+
+mkdir -p "$CODEGEN_DEST"
+
+(
+  cd "$ROOT"
+  TMPDIR="$TMP_ROOT" PANTS_DISTDIR="$DIST_REL" pants export-codegen "$TARGET"
+)
+
+if [[ ! -d "${DIST_ABS}/codegen" ]]; then
+  echo "No generated files found in ${DIST_ABS}/codegen" >&2
+  exit 1
+fi
+
+rsync -a --delete "${DIST_ABS}/codegen/" "${CODEGEN_DEST}/"
+
+find "$CODEGEN_DEST" -type d -print0 | while IFS= read -r -d '' dir; do
+  touch "${dir}/__init__.py"
+done
+
+echo "✅ gRPC files generated in ${CODEGEN_DEST}"
