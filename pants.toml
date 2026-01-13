@@ -1,0 +1,16 @@
+[GLOBAL]
+pants_version = "2.21.0"
+backend_packages = [
+    "pants.backend.python",
+    "pants.backend.python.lint.black",
+    "pants.backend.python.lint.isort",
+    "pants.backend.codegen.protobuf.python",
+    "pants.backend.docker", 
+  ]
+pants_ignore = [
+  "/data",
+  "/.venv",
+]
+
+[python]
+interpreter_constraints = ["CPython>=3.12,<3.13"]
