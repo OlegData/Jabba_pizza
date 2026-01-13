@@ -1,0 +1,18 @@
+# Pants workspace files
+.pants.d
+.pids
+certs
+data
+/.vscode
+/.venv
+/__pycache__/
+protobuf/gen_py/
+web/client/node_modules/
+*.pyc
+*pdf
+*zip
+*xhtml
+*html
+*css
+*gif
+jabbas_pizza.code-workspace
