@@ -1,0 +1,12 @@
+version: "3.8"
+
+services:
+  accounts-service:
+    build:
+      context: ../..
+      dockerfile: accounts/Dockerfile
+    image: accounts:latest
+    container_name: accounts
+    restart: no
+    ports:
+      - "50051:50051"
