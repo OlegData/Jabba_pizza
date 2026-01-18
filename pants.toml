@@ -21,3 +21,6 @@ root_patterns = [
   "protobuf/gen_py",
   "protobuf/src",
 ]
+
+[python-infer]
+imports = true
