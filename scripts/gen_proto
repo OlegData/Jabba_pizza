@@ -39,4 +39,19 @@ find "$CODEGEN_DEST" -type d -print0 | while IFS= read -r -d '' dir; do
   touch "${dir}/__init__.py"
 done
 
+# Patch generated grpc imports to use the explicit codegen package.
+python - <<'PY'
+from pathlib import Path
+
+codegen_root = Path("protobuf/gen_py/codegen")
+for path in codegen_root.rglob("*_pb2_grpc.py"):
+    content = path.read_text()
+    updated = content.replace(
+        "from accounts import service_pb2 as accounts_dot_service__pb2",
+        "from codegen.accounts import service_pb2 as accounts_dot_service__pb2",
+    )
+    if updated != content:
+        path.write_text(updated)
+PY
+
 echo "✅ gRPC files generated in ${CODEGEN_DEST}"

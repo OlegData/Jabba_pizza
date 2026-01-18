@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-set -e
-
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 export DB_USER="jabba"
@@ -8,8 +6,9 @@ export DB_PASSWORD="secret"
 export DB_HOST="127.0.0.1"
 export DB_PORT="3306"
 export DB_NAME="jabbas_pizza_accounts"
-
+export PANTS_DISTDIR=/home/oleg/projects/python/jabbas_pizza/dist
 export JWT_SECRET="some-long-random-string"
+
 
 GEN_PY_PATH="${ROOT_DIR}/protobuf/gen_py"
 PYTHONPATH_COMPONENTS=("$ROOT_DIR" "$GEN_PY_PATH")
@@ -34,4 +33,5 @@ fi
 export PYTHONPATH="${NEW_PYTHONPATH}"
 
 source "${ROOT_DIR}/.venv/bin/activate"
+export PATH="$HOME/.local/bin:$PATH"
 PS1="(jabba) ${PS1#\(*\) }"
