@@ -14,3 +14,10 @@ pants_ignore = [
 
 [python]
 interpreter_constraints = ["CPython>=3.12,<3.13"]
+
+[source]
+root_patterns = [
+  "/",
+  "protobuf/gen_py",
+  "protobuf/src",
+]
