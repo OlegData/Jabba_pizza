@@ -5,6 +5,7 @@ package accounts;
 service AccountService {
   rpc GetAccount(GetAccountRequest) returns (GetAccountResponse);
   rpc CreateAccount(CreateAccountRequest) returns (CreateAccountResponse);
+  rpc UpdateAccount (UpdateAccountRequest) returns (UpdateAccountResponse);
 }
 
 message Account {
@@ -35,4 +36,16 @@ message CreateAccountRequest {
 message CreateAccountResponse {
   Account account = 1;
   string token = 2;
+}
+
+message UpdateAccountRequest {
+  int64 account_id = 1;
+  string email = 2;
+  string first_name = 4;
+  string last_name = 5;
+  string hashed_password = 6;
+}
+
+message UpdateAccountResponse {
+  Account account = 1;
 }
