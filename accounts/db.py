@@ -8,7 +8,7 @@ _engine = None
 _SessionLocal = None
 
 
-def get_db_url() -> str:
+def get_db_url() -> URL:
     try:
         port = int(os.getenv("DB_PORT", "3306"))
     except ValueError as exc:
