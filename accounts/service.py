@@ -48,3 +48,33 @@ class AccountService(service_pb2_grpc.AccountServiceServicer):
                 account.last_name,
             ),
         )
+
+    def GetAccount(
+        self, request: service_pb2.GetAccountRequest, context: grpc.ServicerContext
+    ) -> service_pb2.GetAccountResponse:
+        required_fields = ["email"]
+        service_utils.validate_required(context, request, required_fields)
+
+        account = self.repo.get_account_by_email(email=request.email)
+        if not account:
+            context.abort(
+                grpc.StatusCode.NOT_FOUND, "Account not found", email=request.email
+            )
+            return service_pb2.GetAccountResponse()
+
+        account_msg = service_pb2.Account(
+            account_id=account.id,
+            email=account.email,
+            first_name=account.first_name,
+            last_name=account.last_name,
+            is_active=account.is_active,
+            is_verified=account.is_verified,
+        )
+        return service_pb2.GetAccountResponse(
+            account=account_msg,
+            token=creds_utils.generate_token(
+                account.email,
+                account.first_name,
+                account.last_name,
+            ),
+        )
