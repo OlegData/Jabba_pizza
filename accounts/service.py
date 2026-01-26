@@ -106,3 +106,17 @@ class AccountService(service_pb2_grpc.AccountServiceServicer):
             is_verified=updated_account.is_verified,
         )
         return service_pb2.UpdateAccountResponse(account=account)
+
+    def DeleteAccount(
+        self, request: service_pb2.DeleteAccountRequest, context: grpc.ServicerContext
+    ) -> service_pb2.DeleteAccountResponse:
+        required_fields = ["account_id"]
+        service_utils.validate_required(context, request, required_fields)
+
+        try:
+            self.repo.delete_account(account_id=request.account_id)
+            logger.info("Account deleted", account_id=request.account_id)
+            return service_pb2.DeleteAccountResponse(success=True)
+        except AccountNotFoundError as e:
+            context.abort(grpc.StatusCode.NOT_FOUND, str(e), account_id=request.account_id)
+            return service_pb2.DeleteAccountResponse(success=False)

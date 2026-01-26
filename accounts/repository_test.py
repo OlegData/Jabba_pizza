@@ -115,3 +115,22 @@ class TestAccountRepository(unittest.TestCase):
                 fake_account.hashed_password,
             )
         mock_error_logger.assert_called_once_with("Account not found for update", account_id=fake_account.id)
+
+    def test_delete_account(self):
+        account = self.repo.create_account(
+            email="test@example.com",
+            first_name="Test",
+            last_name="User",
+            hashed_password="Test",
+        )
+        self.repo.delete_account(account.id)
+        check_session = self.Session()
+        user = check_session.query(users.User).filter_by(email="test@example.com").one_or_none()
+        self.assertIsNone(user)
+
+    @mock.patch.object(repository.logger, "error")
+    def test_delete_account_not_found(self, mock_error_logger):
+        fake_account_id = 999
+        with self.assertRaises(repository.AccountNotFoundError):
+            self.repo.delete_account(fake_account_id)
+        mock_error_logger.assert_called_once_with("Account not found for deletion", account_id=fake_account_id)

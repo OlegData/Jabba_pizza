@@ -100,25 +100,21 @@ class AccountServiceTest(unittest.TestCase):
         self.account_service.GetAccount(request=self.request, context=self.context)
 
     def test_UpdateAccount_account_not_found_aborts(self):
-        request = mock.Mock()
-        request.account = self.request
-        request.account.id = 1
+        self.request.account_id = 1
         self.repo.update_account.side_effect = AccountNotFoundError("Account not found")
 
-        self.account_service.UpdateAccount(request=request, context=self.context)
+        self.account_service.UpdateAccount(request=self.request, context=self.context)
 
         self.context.abort.assert_called_once_with(
             grpc.StatusCode.NOT_FOUND,
             "Account not found",
-            account_id=request.account.id,
+            account_id=self.request.account_id,
         )
         self.repo.update_account.assert_called_once()
 
     @mock.patch("accounts.service_utils.validate_required")
     def test_UpdateAccount_response(self, mock_validate_required):
-        request = mock.Mock()
-        request.account = self.request
-        request.account.id = 1
+        self.request.account_id = 1
         self.repo.update_account.return_value = User(
             id=1,
             email="test@example.com",
@@ -128,11 +124,33 @@ class AccountServiceTest(unittest.TestCase):
             is_active=True,
             is_verified=False,
         )
-        self.account_service.UpdateAccount(request=request, context=self.context)
+        self.account_service.UpdateAccount(request=self.request, context=self.context)
         self.repo.update_account.assert_called_once_with(
-            request.account.id,
-            request.account.email,
-            request.account.first_name,
-            request.account.last_name,
-            request.account.hashed_password,
+            self.request.account_id,
+            self.request.email,
+            self.request.first_name,
+            self.request.last_name,
+            self.request.hashed_password,
         )
+
+    def test_DeleteAccount_successful(self):
+        self.request.account_id = 1
+
+        response = self.account_service.DeleteAccount(request=self.request, context=self.context)
+
+        self.repo.delete_account.assert_called_once_with(account_id=self.request.account_id)
+        self.assertTrue(response.success)
+
+    def test_DeleteAccount_not_found_aborts(self):
+        request = mock.Mock()
+        request.account_id = 999
+        self.repo.delete_account.side_effect = AccountNotFoundError("Account not found")
+
+        self.account_service.DeleteAccount(request=request, context=self.context)
+
+        self.context.abort.assert_called_once_with(
+            grpc.StatusCode.NOT_FOUND,
+            "Account not found",
+            account_id=request.account_id,
+        )
+        self.repo.delete_account.assert_called_once_with(account_id=request.account_id)

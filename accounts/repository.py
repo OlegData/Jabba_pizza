@@ -81,3 +81,19 @@ class AccountRepository:
                 logger.error("Failed to update account", error=str(exc), account_id=id)
                 raise DatabaseError("Database error during update") from exc
         return existing_account
+
+    def delete_account(self, account_id: int) -> bool:
+        with self.session as session:
+            try:
+                account = session.query(User).filter_by(id=account_id).one_or_none()
+                if not account:
+                    logger.error("Account not found for deletion", account_id=account_id)
+                    raise AccountNotFoundError("Account not found")
+
+                session.delete(account)
+                session.commit()
+                return True
+            except SQLAlchemyError as exc:
+                session.rollback()
+                logger.error("Failed to delete account", error=str(exc), account_id=account_id)
+                raise DatabaseError("Database error during deletion") from exc

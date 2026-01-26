@@ -55,7 +55,7 @@ if __name__ == "__main__":
         # Example request to UpdateAccount
         logger.info("Sending Update Account Request")
         request_update = service_pb2.UpdateAccountRequest(
-            account_id=1,
+            account_id=response.account.account_id,
             email="test@mail.com",
             first_name="Updated first name",
             last_name="Updated last name",
@@ -67,3 +67,16 @@ if __name__ == "__main__":
         request_get = service_pb2.GetAccountRequest(email=response_update.account.email)
         response_get = stub.GetAccount(request_get)
         logger.info("Get updated account:", response=response_get)
+
+        # Example request to DeleteAccount
+        logger.info("Sending Delete Account Request")
+        request_delete = service_pb2.DeleteAccountRequest(account_id=response.account.account_id)
+        response_delete = stub.DeleteAccount(request_delete)
+        logger.info("Delete Account Response:", response_delete=response_delete)
+        # Verify Deletion by attempting to GetAccount again
+        try:
+            request_get = service_pb2.GetAccountRequest(email=request_update.email)
+            response_get = stub.GetAccount(request_get)
+        except grpc.RpcError as e:
+            logger.error("Expected error when getting deleted account:", error=e.details())
+    logger.info("AccountService client finished")
