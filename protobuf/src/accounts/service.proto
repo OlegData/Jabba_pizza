@@ -3,7 +3,9 @@ syntax = "proto3";
 package accounts;
 
 service AccountService {
+  
   rpc GetAccount(GetAccountRequest) returns (GetAccountResponse);
+  rpc DeleteAccount (DeleteAccountRequest) returns (DeleteAccountResponse);
   rpc CreateAccount(CreateAccountRequest) returns (CreateAccountResponse);
   rpc UpdateAccount (UpdateAccountRequest) returns (UpdateAccountResponse);
 }
@@ -24,6 +26,12 @@ message GetAccountRequest {
 message GetAccountResponse {
   Account account = 1;
   string token = 2;
+}
+message DeleteAccountRequest {
+    int64 account_id = 1;
+}
+message DeleteAccountResponse {
+    bool success = 1;
 }
 
 message CreateAccountRequest {
