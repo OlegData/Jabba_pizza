@@ -58,3 +58,20 @@ class TestAccountRepository(unittest.TestCase):
                 hashed_password="Test2",
             )
         mock_warning_logger.assert_called_once_with("User already exists", email="test@example.com")
+
+    def test_get_account_by_email(self):
+        self.repo.create_account(
+            email="test@email.com",
+            first_name="First",
+            last_name="Last",
+            hashed_password="hashed_pw",
+        )
+        account = self.repo.get_account_by_email("test@email.com")
+        self.assertIsNotNone(account)
+        self.assertEqual(account.email, "test@email.com")
+        self.assertEqual(account.first_name, "First")
+        self.assertEqual(account.last_name, "Last")
+
+    def test_get_account_by_email_not_found(self):
+        account = self.repo.get_account_by_email("test@email.com")
+        self.assertIsNone(account)

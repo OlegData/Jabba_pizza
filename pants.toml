@@ -1,12 +1,19 @@
 [GLOBAL]
-pants_version = "2.21.0"
 backend_packages = [
-    "pants.backend.python",
-    "pants.backend.python.lint.black",
-    "pants.backend.python.lint.isort",
-    "pants.backend.codegen.protobuf.python",
-    "pants.backend.docker", 
-  ]
+  "pants.backend.python",
+  "pants.backend.python.lint.black",
+  "pants.backend.experimental.python.typecheck.pyright",
+  "pants.backend.experimental.python.lint.ruff.check",
+  "pants.backend.experimental.python.lint.ruff.format",
+  "pants.backend.codegen.protobuf.lint.buf",
+  "pants.backend.codegen.protobuf.python",
+  "pants.backend.docker", 
+  "pants.backend.experimental.javascript",
+]
+colors = true
+local_store_dir = ".pants.d/lmdb_store"
+pants_version = "2.21.0"
+
 pants_ignore = [
   "/data",
   "/.venv",
@@ -24,3 +31,10 @@ root_patterns = [
 
 [python-infer]
 imports = true
+
+[test]
+attempts_default = 3
+use_coverage = true
+output = "all"
+timeout_default = 60
+timeout_maximum = 600

@@ -33,14 +33,18 @@ if [[ ! -d "${DIST_ABS}/codegen" ]]; then
   exit 1
 fi
 
-rsync -a --delete "${DIST_ABS}/codegen/" "${CODEGEN_DEST}/"
+if [[ -d "${DIST_ABS}/codegen/protobuf/gen_py" ]]; then
+  rsync -a --delete "${DIST_ABS}/codegen/protobuf/gen_py/" "${CODEGEN_DEST}/"
+else
+  rsync -a --delete "${DIST_ABS}/codegen/" "${CODEGEN_DEST}/"
+fi
 
 find "$CODEGEN_DEST" -type d -print0 | while IFS= read -r -d '' dir; do
   touch "${dir}/__init__.py"
 done
 
 # Patch generated grpc imports to use the explicit codegen package.
-python - <<'PY'
+python3 - <<'PY'
 from pathlib import Path
 
 codegen_root = Path("protobuf/gen_py/codegen")

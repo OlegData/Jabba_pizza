@@ -5,7 +5,7 @@ import jwt
 
 JWT_SECRET = os.getenv("JWT_SECRET", "dev-only-super-secret-key")
 JWT_ALGORITHM = "HS256"
-JWT_EXPIRES_SECONDS = 3600 * 48
+JWT_EXPIRES_SECONDS = 3600 * 48  # 48 hours
 BASE_DIR = os.getenv("CERTS_DIR", "/home/oleg/projects/python/jabbas_pizza/certs")
 
 logger = structlog.get_logger()
@@ -30,7 +30,9 @@ def load_credentials():
     cert_file = os.path.join(BASE_DIR, "accounts.crt")
     key_file = os.path.join(BASE_DIR, "accounts.key")
     try:
-        server_key, server_cert = tuple(_read_binary_file(path) for path in (key_file, cert_file))
+        server_key, server_cert = tuple(
+            _read_binary_file(path) for path in (key_file, cert_file)
+        )
     except FileNotFoundError as err:
         logger.error(
             "Certificate files not found",

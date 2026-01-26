@@ -22,7 +22,9 @@ class AccountServiceTest(unittest.TestCase):
 
     @mock.patch("accounts.utils.creds_utils.generate_token")
     @mock.patch("accounts.service_utils.validate_required")
-    def test_CreateAccount_returns_account_response(self, mock_validate_required, mock_generate_token):
+    def test_CreateAccount_returns_account_response(
+        self, mock_validate_required, mock_generate_token
+    ):
         created_account = {
             "account_id": 1,
             "email": self.request.email,
@@ -41,7 +43,9 @@ class AccountServiceTest(unittest.TestCase):
             is_verified=False,
         )
 
-        response = self.account_service.CreateAccount(request=self.request, context=self.context)
+        response = self.account_service.CreateAccount(
+            request=self.request, context=self.context
+        )
 
         mock_validate_required.assert_called_once_with(
             self.context,
@@ -58,7 +62,9 @@ class AccountServiceTest(unittest.TestCase):
         mock_generate_token.assert_called_once_with("test@example.com", "Test", "User")
 
     def test_CreateAccount_duplicate_email_aborts(self):
-        self.repo.create_account.side_effect = DuplicateEmailError("Email already exists")
+        self.repo.create_account.side_effect = DuplicateEmailError(
+            "Email already exists"
+        )
 
         self.account_service.CreateAccount(request=self.request, context=self.context)
 
@@ -76,9 +82,28 @@ class AccountServiceTest(unittest.TestCase):
         error.details = lambda: "Field email is required"
         self.context.abort.side_effect = error
         with self.assertRaises(grpc.RpcError):
-            self.account_service.CreateAccount(request=self.request, context=self.context)
+            self.account_service.CreateAccount(
+                request=self.request, context=self.context
+            )
 
         self.context.abort.assert_called_once_with(
             grpc.StatusCode.INVALID_ARGUMENT,
             "Email is required",
         )
+
+    @mock.patch("accounts.utils.creds_utils.generate_token")
+    @mock.patch("accounts.service_utils.validate_required")
+    def test_GetAccount_returns_account_response(
+        self, mock_validate_required, mock_generate_token
+    ):
+        mock_generate_token.return_value = "signed-token"
+        self.repo.get_account_by_email.return_value = User(
+            id=1,
+            email=self.request.email,
+            first_name=self.request.first_name,
+            last_name=self.request.last_name,
+            hashed_password=self.request.hashed_password,
+            is_active=True,
+            is_verified=False,
+        )
+        self.account_service.GetAccount(request=self.request, context=self.context)

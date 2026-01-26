@@ -1,6 +1,6 @@
 import structlog
 
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, OperationalError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from accounts.models.users import User
@@ -9,6 +9,10 @@ logger = structlog.get_logger()
 
 
 class DuplicateEmailError(Exception):
+    pass
+
+
+class DatabaseError(Exception):
     pass
 
 
@@ -22,7 +26,7 @@ class AccountRepository:
         first_name: str,
         last_name: str,
         hashed_password: str,
-    ):
+    ) -> User:
         with self.session as session:
             existing_user = session.query(User).filter_by(email=email).first()
             if existing_user:
@@ -44,3 +48,12 @@ class AccountRepository:
                 raise
             session.refresh(new_account)
         return new_account
+
+    def get_account_by_email(self, email: str):
+        try:
+            with self.session as session:
+                account = session.query(User).filter_by(email=email).first()
+        except SQLAlchemyError as exc:
+            logger.error("Database error while fetching account", error=str(exc), email=email)
+            raise DatabaseError("Database error") from exc
+        return account
