@@ -1,11 +1,14 @@
 import structlog
-
-from sqlalchemy.exc import IntegrityError, OperationalError, SQLAlchemyError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from accounts.models.users import User
 
 logger = structlog.get_logger()
+
+
+class AccountNotFoundError(Exception):
+    pass
 
 
 class DuplicateEmailError(Exception):
@@ -57,3 +60,24 @@ class AccountRepository:
             logger.error("Database error while fetching account", error=str(exc), email=email)
             raise DatabaseError("Database error") from exc
         return account
+
+    def update_account(self, id, email, first_name, last_name, hashed_password) -> User:
+        with self.session as session:
+            try:
+                existing_account = session.query(User).filter_by(id=id).one_or_none()
+                if not existing_account:
+                    logger.error("Account not found for update", account_id=id)
+                    raise AccountNotFoundError("Account not found")
+
+                existing_account.email = email
+                existing_account.first_name = first_name
+                existing_account.last_name = last_name
+                existing_account.hashed_password = hashed_password
+
+                session.commit()
+                session.refresh(existing_account)
+            except SQLAlchemyError as exc:
+                session.rollback()
+                logger.error("Failed to update account", error=str(exc), account_id=id)
+                raise DatabaseError("Database error during update") from exc
+        return existing_account
