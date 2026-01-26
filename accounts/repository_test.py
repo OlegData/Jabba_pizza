@@ -5,10 +5,9 @@ from unittest import mock
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.exc import IntegrityError
 
-from accounts.models import base, users
 from accounts import repository
+from accounts.models import base, users
 
 
 class TestAccountRepository(unittest.TestCase):
@@ -75,3 +74,44 @@ class TestAccountRepository(unittest.TestCase):
     def test_get_account_by_email_not_found(self):
         account = self.repo.get_account_by_email("test@email.com")
         self.assertIsNone(account)
+
+    def test_update_account(self):
+        account = self.repo.create_account(
+            email="test@mail.com",
+            first_name="First",
+            last_name="Last",
+            hashed_password="hashed_password",
+        )
+        account.email = "updated@mail.com"
+        account.first_name = "Updated"
+        account.last_name = "User"
+        updated_account = self.repo.update_account(
+            account.id,
+            account.email,
+            account.first_name,
+            account.last_name,
+            account.hashed_password,
+        )
+        self.assertIsNotNone(updated_account)
+        self.assertEqual(updated_account.email, "updated@mail.com")
+        self.assertEqual(updated_account.first_name, "Updated")
+        self.assertEqual(updated_account.last_name, "User")
+
+    @mock.patch.object(repository.logger, "error")
+    def test_update_account_not_found(self, mock_error_logger):
+        fake_account = users.User(
+            id=999,
+            email="test@mail.com",
+            first_name="First",
+            last_name="Last",
+            hashed_password="hashed_password",
+        )
+        with self.assertRaises(repository.AccountNotFoundError):
+            self.repo.update_account(
+                fake_account.id,
+                fake_account.email,
+                fake_account.first_name,
+                fake_account.last_name,
+                fake_account.hashed_password,
+            )
+        mock_error_logger.assert_called_once_with("Account not found for update", account_id=fake_account.id)

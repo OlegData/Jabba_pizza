@@ -2,10 +2,10 @@
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 export DB_USER="jabba"
-export DB_PASSWORD="secret"
+export DB_PASSWORD="hutt"
 export DB_HOST="127.0.0.1"
 export DB_PORT="3306"
-export DB_NAME="jabbas_pizza_accounts"
+export DB_NAME="accounts"
 export PANTS_DISTDIR=/home/oleg/projects/python/jabbas_pizza/dist
 export JWT_SECRET="some-long-random-string"
 

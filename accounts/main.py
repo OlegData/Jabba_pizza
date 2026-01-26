@@ -1,17 +1,43 @@
 import logging
 import sys
-import structlog
-from structlog.dev import ConsoleRenderer
 from concurrent import futures
 
 import grpc
-
+import structlog
 from codegen.accounts import service_pb2_grpc
+from structlog.dev import ConsoleRenderer
 
 from accounts.db import get_session
 from accounts.repository import AccountRepository
 from accounts.service import AccountService
 from accounts.utils import creds_utils
+
+
+class LoggingInterceptor(grpc.ServerInterceptor):
+    def __init__(self, logger: structlog.BoundLogger):
+        self._logger = logger
+
+    def intercept_service(self, continuation, handler_call_details):
+        handler = continuation(handler_call_details)
+        if handler is None:
+            return None
+
+        method = handler_call_details.method
+
+        if handler.unary_unary:
+            def unary_unary(request, context):
+                self._logger.info("gRPC request", method=method, request=request)
+                response = handler.unary_unary(request, context)
+                self._logger.info("gRPC response", method=method, response=response)
+                return response
+
+            return grpc.unary_unary_rpc_method_handler(
+                unary_unary,
+                request_deserializer=handler.request_deserializer,
+                response_serializer=handler.response_serializer,
+            )
+
+        return handler
 
 
 def configure_structlog(local: bool = False) -> None:
@@ -34,7 +60,12 @@ def serve():
     local = len(sys.argv) > 1 and sys.argv[1] == "local"
     configure_structlog(local=local)
     logger = structlog.get_logger()
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+
+    logger.info("Starting AccountService")
+    server = grpc.server(
+        futures.ThreadPoolExecutor(max_workers=10),
+        interceptors=(LoggingInterceptor(logger),),
+    )
     repo = AccountRepository(get_session())
     service_pb2_grpc.add_AccountServiceServicer_to_server(
         AccountService(repo),
