@@ -7,8 +7,6 @@ data
 /.venv
 /__pycache__/
 protobuf/gen_py/
-!protobuf/gen_py/
-!protobuf/gen_py/**
 web/client/node_modules/
 *.pyc
 *pdf
