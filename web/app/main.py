@@ -4,6 +4,7 @@ import logging
 import structlog
 import uvicorn
 from fastapi import FastAPI
+
 from web.app.routes import register_routes
 
 

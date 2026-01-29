@@ -16,3 +16,7 @@ pants test web::
 
 run specific test
 pants test web/app/home:tests -- -k HomeRouteTest
+
+#Run linter and formatters
+pants linter web/::
+pants fmt web/::
