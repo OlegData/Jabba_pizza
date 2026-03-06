@@ -3,6 +3,10 @@
 Run client 
 npm --prefix web/client run dev -- --host --port 3000
 
+Test 
+npm test -- web/client/src/<Folder>/<module>.test.tsx --runInBand
+
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:
