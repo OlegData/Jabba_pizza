@@ -7,8 +7,6 @@ data
 /.venv
 /__pycache__/
 protobuf/gen_py/
-!protobuf/gen_py/
-!protobuf/gen_py/**
 web/client/node_modules/
 *.pyc
 *pdf
@@ -18,3 +16,5 @@ web/client/node_modules/
 *css
 *gif
 jabbas_pizza.code-workspace
+node_modules/
+test_new_tools/
