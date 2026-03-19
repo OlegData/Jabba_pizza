@@ -1,27 +1,21 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { getUrl } from '../Shared/urls';
+
 import pizza from '../assets/pizza.png';
+
 import css from './Home.module.css';
-const Home = () => {
+
+const HomePage = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const response = await fetch('/token', { credentials: 'include', redirect: 'manual' });
-        if (response.ok) {
-          setData(await response.json());
-          console.log('Data:', data);
-        }
-      } catch (error) {
-        console.error('Error fetching token:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
+    getUrl('/token').then((data) => {
+      setData(data);
+      setLoading(false);
+    });
     setLoading(true);
-    fetchData();
   }, []);
 
   if (loading) {
@@ -53,4 +47,4 @@ const Home = () => {
   );
 };
 
-export { Home };
+export { HomePage };
